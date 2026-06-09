@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import BottomToolBar from '../components/BottomToolBar'
 import TopToolBar from '../components/TopToolBar'
 import Box from '@mui/material/Box'
 import PanelArea from '../components/PanelArea'
 import Typography from '@mui/material/Typography'
+import IconButton from '@mui/material/IconButton'
+import AddIcon from '@mui/icons-material/Add'
 
 import axios from 'axios'
 import ItemsList from '../components/ItemsList'
@@ -13,6 +16,7 @@ function Market() {
 
   const [companies, setCompanies] = useState([]);
   const [stocks, setStocks] = useState([]);
+  const navigate = useNavigate()
 
   useEffect(() => {
     getCompanies();
@@ -47,19 +51,44 @@ function Market() {
   console.log("stocks = ", stocks);
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <TopToolBar />
 
       <PanelArea>
-        <Typography sx={{mb: 2}} variant="h6" align="center">
-          Available stocks
-        </Typography>
+        <Box
+          sx={{
+            mb: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography variant="h6">Available stocks</Typography>
+
+          <IconButton
+            sx={(theme) => ({
+              backgroundColor: theme.palette.secondary.light,
+              color: theme.palette.background.default,
+              "&:hover": {
+                backgroundColor: theme.palette.secondary.main,
+              },
+            })}
+            aria-label="Add stock"
+            onClick={() => {
+              console.log("Open create stock form")
+              navigate('/create-data')
+            }}
+          >
+            <AddIcon />
+          </IconButton>
+        </Box>
+
         <ItemsList collection1={companies} collection2={stocks} />
       </PanelArea>
 
       <BottomToolBar />
     </Box>
-  )
+  );
 }
 
 export default Market

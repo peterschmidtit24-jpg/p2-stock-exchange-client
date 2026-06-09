@@ -4,6 +4,7 @@ import Market from './pages/Market'
 import BuyAndSell from './pages/BuyAndSell'
 import Portfolio from './pages/Portfolio'
 import Budget from './pages/Budget'
+import CreateData from './pages/CreateData'
 
 import './App.css'
 
@@ -18,7 +19,8 @@ function App() {
           <Route path="/" element={<Market />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/budget" element={<Budget />} />
-          <Route path="/buy-and-sell/:stocksId" element={<BuyAndSell />} />
+          <Route path="/create-data" element={<CreateData />} />
+          <Route path="/buy-and-sell/:stockId" element={<BuyAndSell />} />
           <Route path="*" element={<h1>404 Not Found</h1>} />
         </Routes>
 

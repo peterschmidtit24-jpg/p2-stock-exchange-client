@@ -12,13 +12,9 @@ function ItemsList({ collection1, collection2 }) {
   // onClick function shall route to the BuyAndSellPage with the stock details, but for now it just logs the company name to the console
 
   function handleItemClick(company, stock) {
-    // console.log(`Clicked on ${company.name}`);
     // route to the BuyAndSellPage with the stock details
-    // navigate(`/buy-and-sell/${company.id}`);
     navigate(`/buy-and-sell/${stock.id}`);
 
-    console.log("company = ", company);
-    console.log("stock xxx = ", stock.id);
   }
 
 
