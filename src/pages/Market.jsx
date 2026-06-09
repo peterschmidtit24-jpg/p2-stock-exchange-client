@@ -12,6 +12,8 @@ import AddIcon from '@mui/icons-material/Add'
 import axios from 'axios'
 import ItemsList from '../components/ItemsList'
 
+const API_BASE_URL = 'http://localhost:5002'
+
 function Market() {
 
   const [companies, setCompanies] = useState([]);
@@ -19,32 +21,35 @@ function Market() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    getCompanies();
+    async function loadMarketData() {
+      const [companiesResponse, stocksResponse] = await Promise.all([
+        axios.get(`${API_BASE_URL}/companies`),
+        axios.get(`${API_BASE_URL}/stocks`),
+      ]);
+
+      setCompanies(companiesResponse.data);
+      setStocks(stocksResponse.data);
+    }
+
+    loadMarketData();
   }, []);
 
-  // get the main collection of companies and stocks from the backend and set them in the state to be used in the components
-  async function getCompanies() {
-    
-    const response = await axios.get('http://localhost:5002/companies');
+  async function handleDeleteStock(company, stock) {
+    if (!company || !stock) return;
 
-    const data = await response.data;
-    setCompanies(data);
+    await Promise.all([
+      axios.delete(`${API_BASE_URL}/stocks/${stock.id}`),
+      axios.delete(`${API_BASE_URL}/companies/${company.id}`),
+    ]);
+
+    setStocks((currentStocks) =>
+      currentStocks.filter((currentStock) => currentStock.id !== stock.id)
+    );
+    setCompanies((currentCompanies) =>
+      currentCompanies.filter((currentCompany) => currentCompany.id !== company.id)
+    );
   }
-
-  useEffect(() => {
-    getStocks();
-  }, []);
-
-
-  // get the secondary collection of stocks from the backend and set them in the state to be used in the components
-  async function getStocks() {
-    
-    const response = await axios.get('http://localhost:5002/stocks');
-
-    const data = await response.data;
-    setStocks(data);
-  }
-
+  
   if (!companies.length || !stocks.length) return null;
 
   console.log("companies = ", companies);
@@ -83,7 +88,11 @@ function Market() {
           </IconButton>
         </Box>
 
-        <ItemsList collection1={companies} collection2={stocks} />
+        <ItemsList
+          collection1={companies}
+          collection2={stocks}
+          onDelete={handleDeleteStock}
+        />
       </PanelArea>
 
       <BottomToolBar />

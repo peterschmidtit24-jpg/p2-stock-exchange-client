@@ -4,7 +4,7 @@ import List from '@mui/material/List'
 
 import { useNavigate } from 'react-router-dom'
 
-function ItemsList({ collection1, collection2 }) {
+function ItemsList({ collection1, collection2, onDelete }) {
   const navigate = useNavigate();
 
   // overflowY: 'auto', to make the list scrollable when it exceeds the max height
@@ -17,6 +17,19 @@ function ItemsList({ collection1, collection2 }) {
 
   }
 
+  function handleEditClick(company, stock) {
+    navigate(`/update-data/${stock.id}`, {
+      state: {
+        company,
+        stock,
+      },
+    });
+  }
+
+  function handleDeleteClick(company, stock) {
+    onDelete(company, stock);
+  }
+
 
   return (
     <List
@@ -27,19 +40,20 @@ function ItemsList({ collection1, collection2 }) {
         p: 1,
       }}
     >
-      {collection1.map((company, index) => (
-        <ItemRow
-          key={company.id}
-          company={company}
-          stock={collection2.find((stock) => stock.companyId === company.id)}
-          onClick={() =>
-            handleItemClick(
-              company,
-              collection2.find((stock) => stock.companyId === company.id),
-            )
-          }
-        />
-      ))}
+      {collection1.map((company) => {
+        const stock = collection2.find((currentStock) => currentStock.companyId === company.id);
+
+        return (
+          <ItemRow
+            key={company.id}
+            company={company}
+            stock={stock}
+            onClick={() => handleItemClick(company, stock)}
+            onEdit={() => handleEditClick(company, stock)}
+            onDelete={() => handleDeleteClick(company, stock)}
+          />
+        );
+      })}
     </List>
   );
 }

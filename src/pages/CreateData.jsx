@@ -1,18 +1,34 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import axios from "axios";
 
 // it creates a new data set of a company and its stock data
 function CreateData() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
-    companyId: "",
-    companyName: "",
-    location: "",
     stockId: "",
+    companyId: "",
     currentPrice: "",
+    priceChange: "",
+    priceChangePercent: "",
     volume: "",
+    marketCap: "",
+    companyName: "",
+    image: "",
+    branch: "",
+    location: "",
+    lastRevenue: "",
+    lastRevenueDate: "",
+    lastEarnings: "",
+    lastEarningsDate: "",
+    buyRatings: "",
+    holdRatings: "",
+    sellRatings: "",
   });
 
   function handleChange(event) {
@@ -24,14 +40,44 @@ function CreateData() {
     }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
-    console.log("Form data:", formData);
+    const companyId = formData.companyId.trim().toUpperCase() || `COMP${Date.now()}`;
+    const stockId = formData.stockId.trim().toUpperCase() || `STK${Date.now()}`;
 
-    // Later:
-    // 1. POST company data to /companies
-    // 2. POST stock data to /stocks
+    const newStockData = {
+      id: stockId,
+      companyId,
+      currentPrice: Number(formData.currentPrice) || 0,
+      priceChange: Number(formData.priceChange) || 0,
+      priceChangePercent: Number(formData.priceChangePercent) || 0,
+      volume: Number(formData.volume) || 0,
+      marketCap: Number(formData.marketCap) || 0,
+      company: {
+        id: companyId,
+        name: formData.companyName.trim() || "New Company",
+        image: formData.image.trim() || "/assets/google-color-icon.svg",
+        branch: formData.branch.trim() || "Unknown",
+        location: formData.location.trim() || "Unknown",
+        lastRevenue: Number(formData.lastRevenue) || 0,
+        lastRevenueDate: formData.lastRevenueDate || "2024-01-01",
+        lastEarnings: Number(formData.lastEarnings) || 0,
+        lastEarningsDate: formData.lastEarningsDate || "2024-01-01",
+        analystRatings: {
+          buy: Number(formData.buyRatings) || 0,
+          hold: Number(formData.holdRatings) || 0,
+          sell: Number(formData.sellRatings) || 0,
+        },
+      },
+    };
+
+    const { company, ...stock } = newStockData;
+
+    await axios.post("http://localhost:5002/companies", company);
+    await axios.post("http://localhost:5002/stocks", stock);
+
+    navigate("/");
   }
 
   return (
@@ -56,46 +102,22 @@ function CreateData() {
           maxWidth: 500,
         }}
       >
-        <Typography variant="h6">Company data</Typography>
-
-        <TextField
-          label="Company ID"
-          name="companyId"
-          value={formData.companyId}
-          onChange={handleChange}
-          placeholder="e.g. JKLM"
-          required
-        />
-
-        <TextField
-          label="Company name"
-          name="companyName"
-          value={formData.companyName}
-          onChange={handleChange}
-          placeholder="e.g. Sony Group Corporation"
-          required
-        />
-
-        <TextField
-          label="Location"
-          name="location"
-          value={formData.location}
-          onChange={handleChange}
-          placeholder="e.g. Japan"
-          required
-        />
-
-        <Typography variant="h6" sx={{ mt: 2 }}>
-          Stock data
-        </Typography>
+        <Typography variant="h6">Stock data</Typography>
 
         <TextField
           label="Stock symbol"
           name="stockId"
           value={formData.stockId}
           onChange={handleChange}
-          placeholder="e.g. SONY"
-          required
+          placeholder="e.g. MSFT"
+        />
+
+        <TextField
+          label="Company ID"
+          name="companyId"
+          value={formData.companyId}
+          onChange={handleChange}
+          placeholder="e.g. CDEF"
         />
 
         <TextField
@@ -104,7 +126,22 @@ function CreateData() {
           type="number"
           value={formData.currentPrice}
           onChange={handleChange}
-          required
+        />
+
+        <TextField
+          label="Price change"
+          name="priceChange"
+          type="number"
+          value={formData.priceChange}
+          onChange={handleChange}
+        />
+
+        <TextField
+          label="Price change percent"
+          name="priceChangePercent"
+          type="number"
+          value={formData.priceChangePercent}
+          onChange={handleChange}
         />
 
         <TextField
@@ -113,7 +150,112 @@ function CreateData() {
           type="number"
           value={formData.volume}
           onChange={handleChange}
-          required
+        />
+
+        <TextField
+          label="Market cap"
+          name="marketCap"
+          type="number"
+          value={formData.marketCap}
+          onChange={handleChange}
+        />
+
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Company data
+        </Typography>
+
+        <TextField
+          label="Company name"
+          name="companyName"
+          value={formData.companyName}
+          onChange={handleChange}
+          placeholder="e.g. Microsoft Corporation"
+        />
+
+        <TextField
+          label="Image path"
+          name="image"
+          value={formData.image}
+          onChange={handleChange}
+          placeholder="/assets/windows-10-icon.svg"
+        />
+
+        <TextField
+          label="Branch"
+          name="branch"
+          value={formData.branch}
+          onChange={handleChange}
+          placeholder="e.g. Technology"
+        />
+
+        <TextField
+          label="Location"
+          name="location"
+          value={formData.location}
+          onChange={handleChange}
+          placeholder="e.g. USA"
+        />
+
+        <TextField
+          label="Last revenue"
+          name="lastRevenue"
+          type="number"
+          value={formData.lastRevenue}
+          onChange={handleChange}
+        />
+
+        <TextField
+          label="Last revenue date"
+          name="lastRevenueDate"
+          type="date"
+          value={formData.lastRevenueDate}
+          onChange={handleChange}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
+
+        <TextField
+          label="Last earnings"
+          name="lastEarnings"
+          type="number"
+          value={formData.lastEarnings}
+          onChange={handleChange}
+        />
+
+        <TextField
+          label="Last earnings date"
+          name="lastEarningsDate"
+          type="date"
+          value={formData.lastEarningsDate}
+          onChange={handleChange}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
+
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Analyst ratings
+        </Typography>
+
+        <TextField
+          label="Buy ratings"
+          name="buyRatings"
+          type="number"
+          value={formData.buyRatings}
+          onChange={handleChange}
+        />
+
+        <TextField
+          label="Hold ratings"
+          name="holdRatings"
+          type="number"
+          value={formData.holdRatings}
+          onChange={handleChange}
+        />
+
+        <TextField
+          label="Sell ratings"
+          name="sellRatings"
+          type="number"
+          value={formData.sellRatings}
+          onChange={handleChange}
         />
 
         <Button

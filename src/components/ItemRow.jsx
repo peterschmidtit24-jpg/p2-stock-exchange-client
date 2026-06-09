@@ -1,17 +1,18 @@
 import ListItem from '@mui/material/ListItem'
-import ListItemText from '@mui/material/ListItemText'
 import ListItemAvatar from '@mui/material/ListItemAvatar'
 import Avatar from '@mui/material/Avatar'
-import ImageIcon from '@mui/icons-material/Image'
 import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
 import Typography from '@mui/material/Typography'
 import ListItemButton from '@mui/material/ListItemButton'
+import IconButton from '@mui/material/IconButton'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 
 const API_BASE_URL = 'http://localhost:5002'
 
-function ItemRow({ company, stock, onClick }) {
+function ItemRow({ company, stock, onClick, onEdit, onDelete }) {
 
   if (!company || !stock) return null;
 
@@ -20,9 +21,38 @@ function ItemRow({ company, stock, onClick }) {
 
   return (
     <>
-      <ListItem sx={{ mb: 1, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}>
+      <ListItem
+        secondaryAction={
+          <Box sx={{ display: "flex", gap: 0.5 }}>
+            <IconButton
+              edge="end"
+              aria-label={`Edit ${stock.id}`}
+              onClick={(event) => {
+                event.stopPropagation();
+                console.log("Edit stock clicked", stock.id);
+                onEdit();
+              }}
+            >
+              <EditIcon />
+            </IconButton>
+
+            <IconButton
+              edge="end"
+              aria-label={`Delete ${stock.id}`}
+              onClick={(event) => {
+                event.stopPropagation();
+                console.log("Delete stock clicked", stock.id);
+                onDelete();
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Box>
+        }
+        sx={{ mb: 1, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}
+      >
         {/* The ListItemButton makes the entire row clickable */}
-        <ListItemButton onClick={onClick}>
+        <ListItemButton onClick={onClick} sx={{ pr: 12 }}>
           <ListItemAvatar>
             <Avatar src={imageUrl}>{stock.id.slice(0, 2)}</Avatar>
           </ListItemAvatar>

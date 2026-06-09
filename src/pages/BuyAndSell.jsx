@@ -14,6 +14,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import Paper from '@mui/material/Paper'
+import Snackbar from '@mui/material/Snackbar'
 import Stack from '@mui/material/Stack'
 import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
@@ -25,12 +26,14 @@ import axios from 'axios'
 const API_BASE_URL = 'http://localhost:5002'
 const AVAILABLE_CASH = 10000
 
+
 function BuyAndSell() {
   const { stockId } = useParams();
   const navigate = useNavigate();
   const [stocksData, setStocksData] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [tradeType, setTradeType] = useState('buy');
+  const [cashWarningOpen, setCashWarningOpen] = useState(false);
 
   useEffect(() => {
     getStockDetails();
@@ -43,7 +46,17 @@ function BuyAndSell() {
   }
 
   function changeQuantity(amount) {
-    setQuantity((currentQuantity) => Math.max(1, currentQuantity + amount));
+    setQuantity((currentQuantity) => {
+      const nextQuantity = Math.max(1, currentQuantity + amount);
+      const nextTotalCost = stocksData.currentPrice * nextQuantity;
+
+      if (tradeType === 'buy' && nextTotalCost > AVAILABLE_CASH) {
+        setCashWarningOpen(true);
+        return currentQuantity;
+      }
+
+      return nextQuantity;
+    });
   }
 
   if (!stocksData) {
@@ -113,49 +126,55 @@ function BuyAndSell() {
             </Stack>
           </Box>
 
-          <Paper sx={{ p: 4, mb: 3, minHeight: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 2 }}>
-            <Typography color="text.secondary">
-              Price history appears after Day 2
-            </Typography>
-          </Paper>
+          {/*
+            <Paper sx={{ p: 4, mb: 3, minHeight: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 2 }}>
+              <Typography color="text.secondary">
+                Price history appears after Day 2
+              </Typography>
+            </Paper>
+           */}
 
-          <Paper sx={{ mb: 3, overflow: 'hidden', borderRadius: 2 }}>
-            <Typography sx={{ px: 3, py: 2, letterSpacing: 3, color: 'text.secondary' }}>
-              INSTRUMENT INFO
-            </Typography>
-            <Divider />
+          {/*
+            <Paper sx={{ mb: 3, overflow: 'hidden', borderRadius: 2 }}>
+              <Typography sx={{ px: 3, py: 2, letterSpacing: 3, color: 'text.secondary' }}>
+                INSTRUMENT INFO
+              </Typography>
+              <Divider />
 
-            <InfoRow
-              leftLabel="Company"
-              leftValue={company.name}
-              rightLabel="Sector"
-              rightValue={company.branch}
-            />
-            <InfoRow
-              leftLabel="Type"
-              leftValue="Stock"
-              rightLabel="Symbol"
-              rightValue={stocksData.id}
-            />
-            <InfoRow
-              leftLabel="Market cap"
-              leftValue={formatLargeNumber(stocksData.marketCap)}
-              rightLabel="Volume"
-              rightValue={formatLargeNumber(stocksData.volume)}
-            />
-            <InfoRow
-              leftLabel="Revenue"
-              leftValue={formatLargeNumber(company.lastRevenue)}
-              rightLabel="Earnings"
-              rightValue={formatLargeNumber(company.lastEarnings)}
-            />
-            <InfoRow
-              leftLabel="Location"
-              leftValue={company.location}
-              rightLabel="Ratings"
-              rightValue={`${company.analystRatings.buy} buy / ${company.analystRatings.hold} hold / ${company.analystRatings.sell} sell`}
-            />
-          </Paper>
+              <InfoRow
+                leftLabel="Company"
+                leftValue={company.name}
+                rightLabel="Sector"
+                rightValue={company.branch}
+              />
+              <InfoRow
+                leftLabel="Type"
+                leftValue="Stock"
+                rightLabel="Symbol"
+                rightValue={stocksData.id}
+              />
+              <InfoRow
+                leftLabel="Market cap"
+                leftValue={formatLargeNumber(stocksData.marketCap)}
+                rightLabel="Volume"
+                rightValue={formatLargeNumber(stocksData.volume)}
+              />
+              <InfoRow
+                leftLabel="Revenue"
+                leftValue={formatLargeNumber(company.lastRevenue)}
+                rightLabel="Earnings"
+                rightValue={formatLargeNumber(company.lastEarnings)}
+              />
+              <InfoRow
+                leftLabel="Location"
+                leftValue={company.location}
+                rightLabel="Ratings"
+                rightValue={`${company.analystRatings.buy} buy / ${company.analystRatings.hold} hold / ${company.analystRatings.sell} sell`}
+              />
+            </Paper>
+
+          */}  
+
 
           <ToggleButtonGroup
             exclusive
@@ -206,6 +225,13 @@ function BuyAndSell() {
           </Button>
         </Box>
       </PanelArea>
+
+      <Snackbar
+        open={cashWarningOpen}
+        autoHideDuration={3000}
+        onClose={() => setCashWarningOpen(false)}
+        message="Not enough available cash for this quantity"
+      />
 
       <BottomToolBar />
     </Box>
