@@ -2,6 +2,7 @@
 
 
 function StockForm({ onSubmit }) {
+  
   const handleSubmit = (event) => {
     event.preventDefault();
     const stockSymbol = event.target.elements.stockSymbol.value.trim();
