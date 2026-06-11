@@ -74,61 +74,64 @@ function Market() {
     : companies;
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <Box sx={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <TopToolBar pagename="Market"/>
 
       <PanelArea>
-        <Box
-          sx={{
-            mb: 2,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Typography variant="h6">Available stocks</Typography>
-
-          <IconButton
-            sx={(theme) => ({
-              backgroundColor: theme.palette.secondary.light,
-              color: theme.palette.background.default,
-              "&:hover": {
-                backgroundColor: theme.palette.secondary.main,
-              },
-            })}
-            aria-label="Add stock"
-            onClick={() => {
-              console.log("Open create stock form")
-              navigate('/create-data')
+        <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+          <Box
+            sx={{
+              mb: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              p: 1,
             }}
           >
-            <AddIcon />
-          </IconButton>
+            <Typography variant="h6">Available stocks</Typography>
+
+            <IconButton
+              sx={(theme) => ({
+                backgroundColor: theme.palette.secondary.light,
+                color: theme.palette.background.default,
+                "&:hover": {
+                  backgroundColor: theme.palette.secondary.main,
+                },
+              })}
+              aria-label="Add stock"
+              onClick={() => {
+                console.log("Open create stock form")
+                navigate('/create-data')
+              }}
+            >
+              <AddIcon />
+            </IconButton>
+          </Box>
+
+          <TextField
+            fullWidth
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search by stock, company, country, or branch"
+            size="small"
+            sx={{ mb: 6 }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="secondary" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+
+          <ItemsList
+            collection1={filteredCompanies}
+            collection2={stocks}
+            onDelete={handleDeleteStock}
+          />
         </Box>
-
-        <TextField
-          fullWidth
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="Search by stock, company, country, or branch"
-          size="small"
-          sx={{ mb: 2 }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="secondary" />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-
-        <ItemsList
-          collection1={filteredCompanies}
-          collection2={stocks}
-          onDelete={handleDeleteStock}
-        />
       </PanelArea>
 
       <BottomToolBar />

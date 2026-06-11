@@ -3,6 +3,7 @@ import PortfolioContext from './PortfolioContext'
 
 const STARTING_CASH = 10000
 const TRANSACTIONS_STORAGE_KEY = 'transactions'
+const BUDGET_HISTORY_STORAGE_KEY = 'budgetHistory'
 
 function loadSavedTransactions() {
   try {
@@ -12,12 +13,25 @@ function loadSavedTransactions() {
   }
 }
 
+function loadSavedBudgetHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(BUDGET_HISTORY_STORAGE_KEY)) || []
+  } catch {
+    return []
+  }
+}
+
 function saveTransactions(transactions) {
   localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions))
 }
 
+function saveBudgetHistory(budgetHistory) {
+  localStorage.setItem(BUDGET_HISTORY_STORAGE_KEY, JSON.stringify(budgetHistory))
+}
+
 function PortfolioProvider({ children }) {
   const [transactions, setTransactions] = useState(loadSavedTransactions)
+  const [budgetHistory, setBudgetHistory] = useState(loadSavedBudgetHistory)
 
   const availableCash = useMemo(() => {
     return transactions.reduce((cash, transaction) => {
@@ -40,7 +54,21 @@ function PortfolioProvider({ children }) {
 
   function resetTransactions() {
     setTransactions([])
+    setBudgetHistory([])
     saveTransactions([])
+    saveBudgetHistory([])
+  }
+
+  function recordBudgetSnapshot(snapshot) {
+    setBudgetHistory((currentBudgetHistory) => {
+      const updatedBudgetHistory = [
+        ...currentBudgetHistory.filter((point) => point.day !== snapshot.day),
+        snapshot,
+      ].sort((a, b) => a.day - b.day)
+
+      saveBudgetHistory(updatedBudgetHistory)
+      return updatedBudgetHistory
+    })
   }
 
   function getOwnedQuantity(stockId) {
@@ -62,8 +90,10 @@ function PortfolioProvider({ children }) {
   const value = {
     startingCash: STARTING_CASH,
     availableCash,
+    budgetHistory,
     transactions,
     addTransaction,
+    recordBudgetSnapshot,
     resetTransactions,
     getOwnedQuantity,
   }

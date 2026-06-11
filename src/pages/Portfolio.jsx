@@ -50,7 +50,7 @@ function Portfolio() {
   const isPositive = totalGain >= 0;
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <Box sx={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <TopToolBar pagename="Portfolio"/>
 
       <PanelArea>

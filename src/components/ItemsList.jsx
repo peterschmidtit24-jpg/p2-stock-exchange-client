@@ -34,10 +34,8 @@ function ItemsList({ collection1, collection2, onDelete }) {
   return (
     <List
       sx={{
-        maxHeight: 550,
         overflowY: "auto",
-        bgcolor: "#0b1220",
-        p: 1,
+        p: 0,
       }}
     >
       {collection1.map((company) => {

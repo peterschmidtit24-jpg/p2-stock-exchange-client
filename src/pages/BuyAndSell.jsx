@@ -96,7 +96,7 @@ function BuyAndSell() {
 
   if (!stocksData) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <TopToolBar />
         <PanelArea>
           <Box sx={{ display: 'flex', justifyContent: 'center', pt: 8 }}>
@@ -124,7 +124,7 @@ function BuyAndSell() {
   const actionLabel = tradeType === 'buy' ? 'Buy' : 'Sell';
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <TopToolBar />
 
       <PanelArea>

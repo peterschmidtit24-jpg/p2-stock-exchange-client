@@ -7,6 +7,7 @@ function PanelArea({ children }) {
       component="main"
       sx={{
         flex: 1,
+        minHeight: 0,
         overflowY: 'auto',
         backgroundColor: 'background.default',
         p: 2,

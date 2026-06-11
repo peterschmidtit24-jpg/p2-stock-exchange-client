@@ -13,7 +13,13 @@ import axios from 'axios'
 const DAY_STORAGE_KEY = 'simulationDay'
 
 function TopToolBar(props) {
-  const { availableCash, resetTransactions, startingCash } = usePortfolio()
+  const {
+    availableCash,
+    recordBudgetSnapshot,
+    resetTransactions,
+    startingCash,
+    transactions,
+  } = usePortfolio()
   const [day, setDay] = useState(() => {
     return Number(localStorage.getItem(DAY_STORAGE_KEY)) || 1
   })
@@ -38,15 +44,25 @@ function TopToolBar(props) {
     try {
       const response = await axios.get(`${API_BASE_URL}/stocks`)
       const stocks = response.data
+      const updatedStocks = stocks.map((stock) => simulateStockPrice(stock))
 
       await Promise.all(
-        stocks.map((stock) => {
-          const updatedStock = simulateStockPrice(stock)
-          return axios.put(`${API_BASE_URL}/stocks/${stock.id}`, updatedStock)
+        updatedStocks.map((updatedStock) => {
+          return axios.put(`${API_BASE_URL}/stocks/${updatedStock.id}`, updatedStock)
         })
       )
 
       const nextDay = day + 1
+      const portfolioValue = calculatePortfolioValue(transactions, updatedStocks)
+
+      recordBudgetSnapshot({
+        day: nextDay,
+        cash: roundToCents(availableCash),
+        portfolioValue: roundToCents(portfolioValue),
+        totalValue: roundToCents(availableCash + portfolioValue),
+        createdAt: new Date().toISOString(),
+      })
+
       localStorage.setItem(DAY_STORAGE_KEY, String(nextDay))
       setDay(nextDay)
       window.location.reload()
@@ -183,6 +199,31 @@ function roundToCents(value) {
 
 function roundToPercent(value) {
   return Math.round(value * 100) / 100
+}
+
+function calculatePortfolioValue(transactions, stocks) {
+  const pricesByStockId = new Map(
+    stocks.map((stock) => [stock.id, Number(stock.currentPrice) || 0])
+  )
+  const quantitiesByStockId = new Map()
+
+  transactions.forEach((transaction) => {
+    const currentQuantity = quantitiesByStockId.get(transaction.stockId) || 0
+    const quantity = Number(transaction.quantity) || 0
+
+    if (transaction.type === 'buy') {
+      quantitiesByStockId.set(transaction.stockId, currentQuantity + quantity)
+    }
+
+    if (transaction.type === 'sell') {
+      quantitiesByStockId.set(transaction.stockId, currentQuantity - quantity)
+    }
+  })
+
+  return [...quantitiesByStockId.entries()].reduce((sum, [stockId, quantity]) => {
+    const currentPrice = pricesByStockId.get(stockId) || 0
+    return sum + quantity * currentPrice
+  }, 0)
 }
 
 export default TopToolBar
