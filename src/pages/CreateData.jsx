@@ -5,6 +5,7 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 // it creates a new data set of a company and its stock data
 function CreateData() {
@@ -74,8 +75,8 @@ function CreateData() {
 
     const { company, ...stock } = newStockData;
 
-    await axios.post("http://localhost:5002/companies", company);
-    await axios.post("http://localhost:5002/stocks", stock);
+    await axios.post(`${API_BASE_URL}/companies`, company);
+    await axios.post(`${API_BASE_URL}/stocks`, stock);
 
     navigate("/");
   }

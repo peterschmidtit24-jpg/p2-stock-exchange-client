@@ -7,9 +7,9 @@ import Typography from '@mui/material/Typography'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import usePortfolio from '../context/usePortfolio'
+import { API_BASE_URL } from '../config/api'
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:5002'
 const DAY_STORAGE_KEY = 'simulationDay'
 
 function TopToolBar(props) {

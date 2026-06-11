@@ -3,8 +3,7 @@ import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
 import ListItem from '@mui/material/ListItem'
 import Typography from '@mui/material/Typography'
-
-const API_BASE_URL = 'http://localhost:5002'
+import { API_BASE_URL } from '../config/api'
 
 function ItemRowPort({ holding }) {
   if (!holding) return null

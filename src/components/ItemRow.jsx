@@ -8,9 +8,8 @@ import ListItemButton from '@mui/material/ListItemButton'
 import IconButton from '@mui/material/IconButton'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import { API_BASE_URL } from '../config/api'
 
-
-const API_BASE_URL = 'http://localhost:5002'
 
 function ItemRow({ company, stock, onClick, onEdit, onDelete }) {
 

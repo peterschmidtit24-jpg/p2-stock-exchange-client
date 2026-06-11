@@ -14,8 +14,7 @@ import SearchIcon from '@mui/icons-material/Search'
 
 import axios from 'axios'
 import ItemsList from '../components/ItemsList'
-
-const API_BASE_URL = 'http://localhost:5002'
+import { API_BASE_URL } from '../config/api'
 
 function Market() {
 

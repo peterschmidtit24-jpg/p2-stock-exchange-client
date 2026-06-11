@@ -10,8 +10,7 @@ import Box from '@mui/material/Box'
 import List from '@mui/material/List'
 import Typography from '@mui/material/Typography'
 import axios from 'axios'
-
-const API_BASE_URL = 'http://localhost:5002'
+import { API_BASE_URL } from '../config/api'
 
 function Portfolio() {
   const { transactions } = usePortfolio();

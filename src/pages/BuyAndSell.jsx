@@ -23,8 +23,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 
 import axios from 'axios'
-
-const API_BASE_URL = 'http://localhost:5002'
+import { API_BASE_URL } from '../config/api'
 
 
 function BuyAndSell() {
