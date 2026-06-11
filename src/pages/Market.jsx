@@ -7,7 +7,10 @@ import Box from '@mui/material/Box'
 import PanelArea from '../components/PanelArea'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
+import TextField from '@mui/material/TextField'
+import InputAdornment from '@mui/material/InputAdornment'
 import AddIcon from '@mui/icons-material/Add'
+import SearchIcon from '@mui/icons-material/Search'
 
 import axios from 'axios'
 import ItemsList from '../components/ItemsList'
@@ -18,6 +21,7 @@ function Market() {
 
   const [companies, setCompanies] = useState([]);
   const [stocks, setStocks] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -55,9 +59,24 @@ function Market() {
   console.log("companies = ", companies);
   console.log("stocks = ", stocks);
 
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const filteredCompanies = normalizedSearchQuery
+    ? companies.filter((company) => {
+        const stock = stocks.find((currentStock) => currentStock.companyId === company.id);
+        const searchableText = [
+          company.name,
+          company.location,
+          company.branch,
+          stock?.id,
+        ].join(' ').toLowerCase();
+
+        return searchableText.includes(normalizedSearchQuery);
+      })
+    : companies;
+
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <TopToolBar />
+      <TopToolBar pagename="Market"/>
 
       <PanelArea>
         <Box
@@ -88,8 +107,26 @@ function Market() {
           </IconButton>
         </Box>
 
+        <TextField
+          fullWidth
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="Search by stock, company, country, or branch"
+          size="small"
+          sx={{ mb: 2 }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="secondary" />
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+
         <ItemsList
-          collection1={companies}
+          collection1={filteredCompanies}
           collection2={stocks}
           onDelete={handleDeleteStock}
         />

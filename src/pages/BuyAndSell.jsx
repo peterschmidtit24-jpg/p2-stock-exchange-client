@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 import BottomToolBar from '../components/BottomToolBar'
 import TopToolBar from '../components/TopToolBar'
+import usePortfolio from '../context/usePortfolio'
 import Box from '@mui/material/Box'
 import PanelArea from '../components/PanelArea'
 import Typography from '@mui/material/Typography'
@@ -24,33 +25,42 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 import axios from 'axios'
 
 const API_BASE_URL = 'http://localhost:5002'
-const AVAILABLE_CASH = 10000
 
 
 function BuyAndSell() {
   const { stockId } = useParams();
   const navigate = useNavigate();
+  const { addTransaction, availableCash, getOwnedQuantity } = usePortfolio();
   const [stocksData, setStocksData] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [tradeType, setTradeType] = useState('buy');
   const [cashWarningOpen, setCashWarningOpen] = useState(false);
 
   useEffect(() => {
+    async function getStockDetails() {
+      const response = await axios.get(`${API_BASE_URL}/stocks/${stockId}?_expand=company`);
+      const data = response.data;
+      setStocksData(data);
+    }
+
     getStockDetails();
   }, [stockId]);
 
-  async function getStockDetails() {
-    const response = await axios.get(`${API_BASE_URL}/stocks/${stockId}?_expand=company`);
-    const data = response.data;
-    setStocksData(data);
-  }
+  const ownedQuantity = stocksData ? getOwnedQuantity(stocksData.id) : 0;
 
   function changeQuantity(amount) {
     setQuantity((currentQuantity) => {
-      const nextQuantity = Math.max(1, currentQuantity + amount);
+      const minQuantity = tradeType === 'sell' ? 0 : 1;
+      const maxQuantity = tradeType === 'buy'
+        ? Math.floor(availableCash / stocksData.currentPrice)
+        : ownedQuantity;
+      const nextQuantity = Math.min(
+        maxQuantity,
+        Math.max(minQuantity, currentQuantity + amount)
+      );
       const nextTotalCost = stocksData.currentPrice * nextQuantity;
 
-      if (tradeType === 'buy' && nextTotalCost > AVAILABLE_CASH) {
+      if (tradeType === 'buy' && nextTotalCost > availableCash) {
         setCashWarningOpen(true);
         return currentQuantity;
       }
@@ -58,6 +68,32 @@ function BuyAndSell() {
       return nextQuantity;
     });
   }
+
+  const handleBuyOrSell = () => {
+    const totalAmount = Number(quantity) * stocksData.currentPrice;
+
+    if (tradeType === 'buy' && totalAmount > availableCash) {
+      setCashWarningOpen(true);
+      return;
+    }
+
+    if (Number(quantity) <= 0 || tradeType === 'sell' && Number(quantity) > ownedQuantity) {
+      setCashWarningOpen(true);
+      return;
+    }
+
+    const transaction = {
+      id: `TXN${Date.now()}`,
+      type: tradeType,
+      stockId: stocksData.id,
+      quantity: Number(quantity),
+      pricePerShare: stocksData.currentPrice,
+      totalAmount,
+      date: new Date().toISOString(),
+    };
+
+    addTransaction(transaction);
+  };
 
   if (!stocksData) {
     return (
@@ -77,7 +113,12 @@ function BuyAndSell() {
   const imageUrl = new URL(company.image, `${API_BASE_URL}/`).href;
   const isPositive = stocksData.priceChangePercent >= 0;
   const totalCost = stocksData.currentPrice * quantity;
-  const maxQuantity = Math.floor(AVAILABLE_CASH / stocksData.currentPrice);
+  const maxQuantity = tradeType === 'buy'
+    ? Math.floor(availableCash / stocksData.currentPrice)
+    : ownedQuantity;
+  const cashAfterTrade = tradeType === 'buy'
+    ? availableCash - totalCost
+    : availableCash + totalCost;
   const formattedPrice = `$${stocksData.currentPrice.toFixed(2)}`;
   const formattedPercent = `${isPositive ? '+' : ''}${stocksData.priceChangePercent.toFixed(2)}%`;
   const formattedChange = `${isPositive ? '+' : ''}$${stocksData.priceChange.toFixed(2)}`;
@@ -89,7 +130,7 @@ function BuyAndSell() {
 
       <PanelArea>
         <Box sx={{ maxWidth: 900, mx: 'auto', pb: 3 }}>
-          <Stack direction="row" spacing={2} alignItems="center" sx={{ pb: 2, borderBottom: 1, borderColor: 'divider' }}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: 'center', pb: 2, borderBottom: 1, borderColor: 'divider' }}>
             <IconButton onClick={() => navigate(-1)} sx={{ bgcolor: 'background.paper', borderRadius: 1 }}>
               <ArrowBackIcon />
             </IconButton>
@@ -99,7 +140,7 @@ function BuyAndSell() {
             </Avatar>
 
             <Box>
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                 <Typography variant="h5" sx={{ fontWeight: 700 }}>
                   {stocksData.id}
                 </Typography>
@@ -115,7 +156,7 @@ function BuyAndSell() {
             <Typography variant="h2" sx={{ fontWeight: 700, mb: 1 }}>
               {formattedPrice}
             </Typography>
-            <Stack direction="row" spacing={1.5} alignItems="center">
+            <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
               <TrendingUpIcon color={isPositive ? 'primary' : 'error'} />
               <Typography sx={{ color: isPositive ? 'success.main' : 'error.main', fontWeight: 700 }}>
                 {formattedPercent} today
@@ -181,7 +222,16 @@ function BuyAndSell() {
             fullWidth
             value={tradeType}
             onChange={(event, nextTradeType) => {
-              if (nextTradeType) setTradeType(nextTradeType)
+              if (!nextTradeType) return;
+
+              setTradeType(nextTradeType);
+              setQuantity((currentQuantity) => {
+                if (nextTradeType === 'sell') {
+                  return Math.min(currentQuantity, ownedQuantity);
+                }
+
+                return Math.max(1, currentQuantity);
+              });
             }}
             sx={{ mb: 3 }}
           >
@@ -193,7 +243,7 @@ function BuyAndSell() {
             </ToggleButton>
           </ToggleButtonGroup>
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'center' }} spacing={2} sx={{ mb: 3 }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' }, mb: 3 }}>
             <Typography variant="h6">
               Quantity
             </Typography>
@@ -211,7 +261,12 @@ function BuyAndSell() {
 
           <Paper sx={{ mb: 4, overflow: 'hidden', borderRadius: 2 }}>
             <InfoRow leftLabel="Total cost" leftValue="" rightLabel="" rightValue={`$${totalCost.toFixed(2)}`} />
-            <InfoRow leftLabel="Available cash" leftValue="" rightLabel="" rightValue={`$${AVAILABLE_CASH.toFixed(2)} (max ${maxQuantity})`} />
+            <InfoRow 
+              leftLabel="Remaining cash" 
+              leftValue="" rightLabel="" 
+              rightValue={`$${cashAfterTrade.toFixed(2)}`} 
+            />
+            <InfoRow leftLabel="Available cash" leftValue="" rightLabel="" rightValue={`$${availableCash.toFixed(2)} (max ${maxQuantity})`} />
           </Paper>
 
           <Button
@@ -219,6 +274,8 @@ function BuyAndSell() {
             variant="contained"
             color={tradeType === 'buy' ? 'primary' : 'secondary'}
             size="large"
+            onClick={handleBuyOrSell}
+            disabled={quantity <= 0 || (tradeType === 'buy' && totalCost > availableCash) || (tradeType === 'sell' && quantity > ownedQuantity)}
             sx={{ py: 2, borderRadius: 2, fontSize: 22, fontWeight: 700 }}
           >
             {actionLabel} {quantity} x {stocksData.id} for ${totalCost.toFixed(2)}
@@ -260,18 +317,11 @@ function InfoRow({ leftLabel, leftValue, rightLabel, rightValue }) {
 
 function InfoCell({ label, value, align = 'left' }) {
   return (
-    <Stack direction="row" justifyContent="space-between" spacing={2}>
+    <Stack direction="row" spacing={2} sx={{ justifyContent: 'space-between' }}>
       <Typography color="text.secondary">{label}</Typography>
       <Typography sx={{ fontWeight: 700, textAlign: align }}>{value}</Typography>
     </Stack>
   )
-}
-
-function formatLargeNumber(value) {
-  return new Intl.NumberFormat('en-US', {
-    notation: 'compact',
-    maximumFractionDigits: 2,
-  }).format(value)
 }
 
 export default BuyAndSell

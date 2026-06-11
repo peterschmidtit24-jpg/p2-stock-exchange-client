@@ -38,3 +38,10 @@ createRoot(document.getElementById('root')).render(
     </ThemeProvider>
   </StrictMode>,
 )
+
+
+/*
+git switch main
+git switch developer
+git push -u origin developer
+*/

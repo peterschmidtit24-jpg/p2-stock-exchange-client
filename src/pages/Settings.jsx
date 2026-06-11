@@ -4,19 +4,20 @@ import TopToolBar from "../components/TopToolBar";
 
 import Box from '@mui/material/Box'
 
-function Budget() {
+function Settings() {
 
     return (
         <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <TopToolBar pagename="Budget"/>
+        <TopToolBar pagename="Settings"/>
 
         <Box sx={{ flex: 1 }}>
-            <h1>Budget Page 🚧</h1>
+            <h1>Settings Page 🚧</h1>
         </Box>
 
         <BottomToolBar />
         </Box>
-    );        
+    );    
 }
 
-export default Budget
+
+export default Settings

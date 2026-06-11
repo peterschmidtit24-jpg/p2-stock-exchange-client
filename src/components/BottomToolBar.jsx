@@ -1,7 +1,7 @@
 
-import * as React from 'react';
-import Box from '@mui/material/Box';
+import { useLocation, useNavigate } from "react-router-dom";
 
+import Box from '@mui/material/Box';
 import BottomNavigation from '@mui/material/BottomNavigation';
 import BottomNavigationAction from '@mui/material/BottomNavigationAction';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -10,7 +10,17 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import SettingsIcon from '@mui/icons-material/Settings';
 
 function BottomToolBar() {
-  const [value, setValue] = React.useState(0);
+  const navigate = useNavigate()
+  // get info about which page is active
+  const location = useLocation()
+
+  const currentValue = location.pathname.startsWith("/portfolio")
+    ? "/portfolio"
+    : location.pathname.startsWith("/budget")
+      ? "/budget"
+      : location.pathname.startsWith("/settings")
+        ? "/settings"
+        : "/"
 
   const navActionStyles = {
     color: "text.secondary",
@@ -23,9 +33,9 @@ function BottomToolBar() {
     <Box sx={{ width: '100%' }}>
       <BottomNavigation
         showLabels
-        value={value}
+        value={currentValue}
         onChange={(event, newValue) => {
-          setValue(newValue);
+          navigate(newValue);
         }}
         sx={{
           backgroundColor: "background.paper",
@@ -33,10 +43,30 @@ function BottomToolBar() {
           borderColor: "divider",
         }}
       >
-        <BottomNavigationAction label="Market" icon={<TrendingUpIcon />} sx={navActionStyles} />
-        <BottomNavigationAction label="Portfolio" icon={<BusinessCenterIcon />} sx={navActionStyles} />
-        <BottomNavigationAction label="Budget" icon={<BarChartIcon />} sx={navActionStyles} />
-        <BottomNavigationAction label="Settings" icon={<SettingsIcon />} sx={navActionStyles} />
+        <BottomNavigationAction 
+          label="Market" 
+          value="/"
+          icon={<TrendingUpIcon />} 
+          sx={navActionStyles} 
+        />
+        <BottomNavigationAction 
+          label="Portfolio" 
+          value="/portfolio"
+          icon={<BusinessCenterIcon />} 
+          sx={navActionStyles} 
+        />
+        <BottomNavigationAction 
+          label="Budget" 
+          value="/budget"
+          icon={<BarChartIcon />} 
+          sx={navActionStyles} 
+        />
+        <BottomNavigationAction 
+          label="Settings" 
+          value="/settings"
+          icon={<SettingsIcon />} 
+          sx={navActionStyles} 
+        />
       </BottomNavigation>
     </Box>
   )
