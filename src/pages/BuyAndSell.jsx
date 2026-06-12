@@ -2,6 +2,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 
+// import the Material UI stuff
 import BottomToolBar from '../components/BottomToolBar'
 import TopToolBar from '../components/TopToolBar'
 import usePortfolio from '../context/usePortfolio'
@@ -26,6 +27,19 @@ import axios from 'axios'
 import { API_BASE_URL } from '../config/api'
 
 
+/*
+  `BuyAndSell` displays the details of one selected stock and lets the user create a buy 
+  or sell transaction.
+
+  It gets the `stockId` from the URL, fetches that stock’s data from the API, and shows 
+  the company name, stock symbol, current price, and daily price change. The user can 
+  switch between buy and sell mode, adjust the quantity, and see the total cost, 
+  remaining cash, available cash, and maximum quantity.
+
+  When the user confirms the action, the component validates that they have enough cash 
+  to buy or enough owned shares to sell. If the transaction is valid, it creates a 
+  transaction object and saves it through the portfolio context using `addTransaction`.
+*/
 function BuyAndSell() {
   const { stockId } = useParams();
   const navigate = useNavigate();
@@ -37,6 +51,7 @@ function BuyAndSell() {
 
   useEffect(() => {
     async function getStockDetails() {
+      // get the stocks detial for the stock to be bouth or sold.
       const response = await axios.get(`${API_BASE_URL}/stocks/${stockId}?_expand=company`);
       const data = response.data;
       setStocksData(data);
@@ -47,6 +62,10 @@ function BuyAndSell() {
 
   const ownedQuantity = stocksData ? getOwnedQuantity(stocksData.id) : 0;
 
+  /*
+    `changeQuantity` increases or decreases the selected number of shares while making 
+    sure the user cannot buy more than they can afford or sell more than they own.
+  */
   function changeQuantity(amount) {
     setQuantity((currentQuantity) => {
       const minQuantity = tradeType === 'sell' ? 0 : 1;
@@ -112,15 +131,18 @@ function BuyAndSell() {
   const imageUrl = new URL(company.image, `${API_BASE_URL}/`).href;
   const isPositive = stocksData.priceChangePercent >= 0;
   const totalCost = stocksData.currentPrice * quantity;
+
   const maxQuantity = tradeType === 'buy'
     ? Math.floor(availableCash / stocksData.currentPrice)
     : ownedQuantity;
   const cashAfterTrade = tradeType === 'buy'
     ? availableCash - totalCost
     : availableCash + totalCost;
+
   const formattedPrice = `$${stocksData.currentPrice.toFixed(2)}`;
   const formattedPercent = `${isPositive ? '+' : ''}${stocksData.priceChangePercent.toFixed(2)}%`;
   const formattedChange = `${isPositive ? '+' : ''}$${stocksData.priceChange.toFixed(2)}`;
+  
   const actionLabel = tradeType === 'buy' ? 'Buy' : 'Sell';
 
   return (
@@ -166,7 +188,7 @@ function BuyAndSell() {
             </Stack>
           </Box>
 
-          {/*
+          {/* for later additions of functionality like charts for the stocks
             <Paper sx={{ p: 4, mb: 3, minHeight: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 2 }}>
               <Typography color="text.secondary">
                 Price history appears after Day 2

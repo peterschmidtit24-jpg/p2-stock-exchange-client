@@ -12,7 +12,34 @@ import axios from 'axios'
 
 const DAY_STORAGE_KEY = 'simulationDay'
 
+/*
+  `TopToolBar` renders the top header of the app.
+
+  It shows the current page name, the user’s available cash, and the percentage change 
+  compared to the starting cash. It also contains controls for resetting the simulation 
+  and moving to the next simulation day.
+
+  The component gets portfolio data and actions from `usePortfolio`, including available 
+  cash, transactions, starting cash, transaction reset logic, and budget snapshot 
+  recording.
+
+  When the reset button is clicked, it clears the transactions and resets the simulation 
+  day back to Day 1.
+
+  When the day button is clicked, it fetches all stocks, simulates new stock prices, 
+  saves the updated prices to the API, records a new budget snapshot, updates the stored 
+  day number, and reloads the page so the new prices are shown.
+*/
 function TopToolBar(props) {
+
+  // short form for:
+  /*
+    const availableCash = portfolio.availableCash
+    const recordBudgetSnapshot = portfolio.recordBudgetSnapshot
+    const resetTransactions = portfolio.resetTransactions
+    const startingCash = portfolio.startingCash
+    const transactions = portfolio.transactions
+  */
   const {
     availableCash,
     recordBudgetSnapshot,
@@ -20,12 +47,16 @@ function TopToolBar(props) {
     startingCash,
     transactions,
   } = usePortfolio()
+
   const [day, setDay] = useState(() => {
     return Number(localStorage.getItem(DAY_STORAGE_KEY)) || 1
   })
+
   const [isSimulating, setIsSimulating] = useState(false)
+
   const cashChangePercent = ((availableCash - startingCash) / startingCash) * 100
   const isPositive = cashChangePercent >= 0
+  
   const formattedCash = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -46,6 +77,7 @@ function TopToolBar(props) {
       const stocks = response.data
       const updatedStocks = stocks.map((stock) => simulateStockPrice(stock))
 
+      // request current stock values and data
       await Promise.all(
         updatedStocks.map((updatedStock) => {
           return axios.put(`${API_BASE_URL}/stocks/${updatedStock.id}`, updatedStock)

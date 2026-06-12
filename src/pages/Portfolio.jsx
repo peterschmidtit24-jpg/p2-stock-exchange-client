@@ -12,6 +12,15 @@ import Typography from '@mui/material/Typography'
 import axios from 'axios'
 import { API_BASE_URL } from '../config/api'
 
+/*
+  `Portfolio` loads the user’s transactions from the portfolio context, fetches 
+  company and stock data from the API, and uses that information to calculate the 
+  user’s current holdings.
+
+  It calculates the total portfolio value, the original invested value, the total 
+  gain or loss, and the gain/loss percentage. The results are shown at the top of 
+  the page, and each individual holding is displayed in a list using `ItemRowPort`.
+*/
 function Portfolio() {
   const { transactions } = usePortfolio();
   const [holdings, setHoldings] = useState([]);
@@ -112,6 +121,13 @@ function Portfolio() {
   );
 }
 
+/*
+  `buildHoldings` builds the current portfolio from the transaction history. It 
+  groups transactions by stock, calculates the remaining quantity and invested 
+  amount for each stock, removes stocks that are no longer owned, links each 
+  holding to its stock and company data, and calculates the average price, current 
+  value, gain amount, and gain percentage.
+*/
 function buildHoldings(transactions, companies, stocks) {
   const holdingsByStock = {};
 
@@ -151,10 +167,12 @@ function buildHoldings(transactions, companies, stocks) {
     .map((holding) => {
       const stock = stocks.find((currentStock) => currentStock.id === holding.stockId);
       const company = companies.find((currentCompany) => currentCompany.id === stock?.companyId);
+      
       const averagePrice = holding.investedAmount / holding.quantity;
       const currentPrice = stock?.currentPrice || averagePrice;
       const currentValue = holding.quantity * currentPrice;
       const gainAmount = currentValue - holding.investedAmount;
+
       const gainPercent = holding.investedAmount > 0
         ? (gainAmount / holding.investedAmount) * 100
         : 0;

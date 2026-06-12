@@ -55,6 +55,7 @@ function CreateData() {
       priceChangePercent: Number(formData.priceChangePercent) || 0,
       volume: Number(formData.volume) || 0,
       marketCap: Number(formData.marketCap) || 0,
+
       company: {
         id: companyId,
         name: formData.companyName.trim() || "New Company",
@@ -75,12 +76,14 @@ function CreateData() {
 
     const { company, ...stock } = newStockData;
 
+    // update the DB on the server
     await axios.post(`${API_BASE_URL}/companies`, company);
     await axios.post(`${API_BASE_URL}/stocks`, stock);
 
     navigate("/");
   }
 
+  // the form with material UI for entring the new stock data
   return (
     <Box
       sx={{

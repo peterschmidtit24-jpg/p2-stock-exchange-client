@@ -43,10 +43,12 @@ function UpdateData() {
   }
 
   function handleCancel() {
+    /*
     console.log("Cancel update clicked", {
       company,
       stock,
     });
+    */
     navigate("/");
   }
 
@@ -80,10 +82,12 @@ function UpdateData() {
       marketCap: Number(formData.marketCap) || 0,
     };
 
+    /*
     console.log("Submit update clicked", {
       company: updatedCompany,
       stock: updatedStock,
     });
+    */
 
     await axios.put(`${API_BASE_URL}/companies/${company.id}`, updatedCompany);
     await axios.put(`${API_BASE_URL}/stocks/${stock.id}`, updatedStock);

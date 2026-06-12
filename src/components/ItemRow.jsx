@@ -10,7 +10,22 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { API_BASE_URL } from '../config/api'
 
+/*
+  `ItemRow` renders one stock row in the market list.
 
+  It receives a `company`, its related `stock`, and three action functions: `onClick`, 
+  `onEdit`, and `onDelete`.
+
+  If either the company or stock data is missing, the component returns `null` and renders 
+  nothing.
+
+  The row shows the company image, stock symbol, company name, current stock price, and 
+  daily price change percentage. The price change is shown in a positive or negative color depending on whether the percentage is above or below zero.
+
+  Clicking the main row calls `onClick`, which opens the buy/sell page. Clicking the edit 
+  or delete icons calls `onEdit` or `onDelete`. The icon clicks use 
+  `event.stopPropagation()` so they do not also trigger the row click.
+*/
 function ItemRow({ company, stock, onClick, onEdit, onDelete }) {
 
   if (!company || !stock) return null;
@@ -27,8 +42,8 @@ function ItemRow({ company, stock, onClick, onEdit, onDelete }) {
               edge="end"
               aria-label={`Edit ${stock.id}`}
               onClick={(event) => {
+                //  `event.stopPropagation()` so they do not also trigger the row click.
                 event.stopPropagation();
-                console.log("Edit stock clicked", stock.id);
                 onEdit();
               }}
             >
@@ -39,8 +54,8 @@ function ItemRow({ company, stock, onClick, onEdit, onDelete }) {
               edge="end"
               aria-label={`Delete ${stock.id}`}
               onClick={(event) => {
+                //  `event.stopPropagation()` so they do not also trigger the row click.
                 event.stopPropagation();
-                console.log("Delete stock clicked", stock.id);
                 onDelete();
               }}
             >

@@ -5,9 +5,28 @@ import ListItem from '@mui/material/ListItem'
 import Typography from '@mui/material/Typography'
 import { API_BASE_URL } from '../config/api'
 
+/*
+  `ItemRowPort` renders one stock holding inside the portfolio list.
+
+  It receives a `holding` object that contains the stock id, company data, quantity 
+  owned, average purchase price, current value, gain amount, and gain percentage.
+
+  If no holding is provided, the component returns `null` and renders nothing.
+
+  The row displays the company image or stock initials, the stock id, the number of units 
+  owned, the average buy price, the current value of the holding, and the profit or loss. 
+  The gain/loss text is colored green for positive values and red for negative values.
+*/
 function ItemRowPort({ holding }) {
   if (!holding) return null
 
+  // short form for
+  /*
+    const stockId = holding.stockId
+    const company = holding.company
+    const quantity = holding.quantity
+    ....
+  */
   const {
     stockId,
     company,

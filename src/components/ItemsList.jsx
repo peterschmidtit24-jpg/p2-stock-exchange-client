@@ -4,6 +4,10 @@ import List from '@mui/material/List'
 
 import { useNavigate } from 'react-router-dom'
 
+// Displays a scrollable list of companies and their stocks.
+// For every company in collection1, the matching stock is found in collection2
+// using company.id and stock.companyId. The row actions navigate to buy/sell,
+// navigate to edit, or call the parent delete handler.
 function ItemsList({ collection1, collection2, onDelete }) {
   const navigate = useNavigate();
 
