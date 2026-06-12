@@ -9,22 +9,11 @@ import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SettingsIcon from '@mui/icons-material/Settings';
 
-/*
-  `BottomToolBar` displays the app’s main bottom navigation menu. It uses React Router to 
-  detect the current page and highlight the active navigation item.
-
-  The toolbar contains links for Market, Portfolio, Budget, and Settings. When the user 
-  clicks one of the navigation buttons, the component uses `navigate()` to move to the 
-  selected route.
-*/
 function BottomToolBar() {
   const navigate = useNavigate()
   // get info about which page is active
   const location = useLocation()
 
-  // Determines which navigation item is active.
-  // It compares the current page URL with the main app routes.
-  // If no specific route matches, it defaults to the Market page.
   const currentValue = location.pathname.startsWith("/portfolio")
     ? "/portfolio"
     : location.pathname.startsWith("/budget")
