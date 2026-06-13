@@ -11,6 +11,8 @@ import { API_BASE_URL } from '../config/api'
 import axios from 'axios'
 
 const DAY_STORAGE_KEY = 'simulationDay'
+const UNCHANGED_PRICE_CHANCE = 0.15
+const WIN_LOSS_FREQUENCY_RATIO = 1.5
 
 /*
   `TopToolBar` renders the top header of the app.
@@ -206,10 +208,12 @@ function TopToolBar(props) {
 
 function simulateStockPrice(stock) {
   const currentPrice = Number(stock.currentPrice)
-  const shouldStayUnchanged = Math.random() < 0.15
+  const shouldStayUnchanged = Math.random() < UNCHANGED_PRICE_CHANCE
+  const winChance = WIN_LOSS_FREQUENCY_RATIO / (WIN_LOSS_FREQUENCY_RATIO + 1)
+  const direction = Math.random() < winChance ? 1 : -1
   const changePercent = shouldStayUnchanged
     ? 0
-    : Math.random() * 10 - 5
+    : direction * Math.random() * 5
   const nextPrice = currentPrice * (1 + changePercent / 100)
   const roundedNextPrice = roundToCents(nextPrice)
   const priceChange = roundToCents(roundedNextPrice - currentPrice)
