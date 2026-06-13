@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import BottomToolBar from "../components/BottomToolBar";
 import ItemRowPort from "../components/ItemRowPort";
 import PanelArea from "../components/PanelArea";
@@ -24,6 +25,7 @@ import { API_BASE_URL } from "../config/api";
 */
 function Portfolio() {
   const { transactions } = usePortfolio();
+  const navigate = useNavigate();
   const [holdings, setHoldings] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -165,7 +167,11 @@ function Portfolio() {
 
             <List sx={{ py: 1 }}>
               {holdings.map((holding) => (
-                <ItemRowPort key={holding.stockId} holding={holding} />
+                <ItemRowPort
+                  key={holding.stockId}
+                  holding={holding}
+                  onClick={() => navigate(`/buy-and-sell/${holding.stockId}`)}
+                />
               ))}
             </List>
           </Box>

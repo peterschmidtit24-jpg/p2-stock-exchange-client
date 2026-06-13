@@ -6,13 +6,17 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import PaidIcon from '@mui/icons-material/Paid'
 import usePortfolio from '../context/usePortfolio'
 import { API_BASE_URL } from '../config/api'
 import axios from 'axios'
 
 const DAY_STORAGE_KEY = 'simulationDay'
 const UNCHANGED_PRICE_CHANCE = 0.15
-const WIN_LOSS_FREQUENCY_RATIO = 1.5
+const WIN_PRICE_CHANGE_CHANCE = 0.65
+const MARKET_CRASH_CHANCE = 0.05
+const MAX_NORMAL_PRICE_CHANGE_PERCENT = 5
+const MAX_CRASH_PRICE_CHANGE_PERCENT = 15
 
 /*
   `TopToolBar` renders the top header of the app.
@@ -109,30 +113,75 @@ function TopToolBar(props) {
     <Box
       component="header"
       sx={(theme) => ({
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: { xs: 1, sm: 2 },
         width: '100%',
         maxWidth: '100vw',
-        px: { xs: 2, sm: 1 },
-        py: { xs: 2, sm: 3 },
         overflow: 'hidden',
         backgroundColor: theme.custom.topToolBar.surface,
-        borderBottom: '1px solid',
-        borderColor: theme.custom.topToolBar.border,
       })}
     >
-      <Box sx={{ minWidth: 0 }}>
+      <Box
+        sx={(theme) => ({
+          px: 2,
+          py: 1,
+          backgroundColor: '#010409',
+          borderBottom: '1px solid',
+          borderColor: theme.custom.topToolBar.border,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: { xs: 2, sm: 4 },
+        })}
+      >
+        <PaidIcon
+          sx={{
+            color: '#facc15',
+            fontSize: { xs: 20, sm: 24 },
+          }}
+        />
+        <Typography
+          sx={{
+            color: '#facc15',
+            px: { xs: 1.5, sm: 3 },
+            fontSize: { xs: 16, sm: 20 },
+            fontWeight: 900,
+            lineHeight: 1.2,
+          }}
+        >
+          Stock Trading Sim
+        </Typography>
+        <PaidIcon
+          sx={{
+            color: '#facc15',
+            fontSize: { xs: 20, sm: 24 },
+          }}
+        />
+      </Box>
+
+      <Box
+        sx={(theme) => ({
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          position: 'relative',
+          gap: { xs: 1, sm: 2 },
+          px: { xs: 2, sm: 1 },
+          py: { xs: 2, sm: 3 },
+          backgroundColor: theme.custom.topToolBar.surface,
+          borderBottom: '1px solid',
+          borderColor: theme.custom.topToolBar.border,
+        })}
+      >
+      <Box sx={{ minWidth: 0, maxWidth: { xs: '48%', sm: '36%' }, zIndex: 1 }}>
         <Typography
           variant="h6"
           sx={{
-            fontSize: { xs: 24, sm: 32 },
+            color: 'text.secondary',
+            fontSize: { xs: 18, sm: 24 },
             fontWeight: 800,
             lineHeight: 1,
           }}
         >
-          {props.pagename}
+          Cash
         </Typography>
         <Typography
           component="p"
@@ -149,12 +198,34 @@ function TopToolBar(props) {
         </Typography>
       </Box>
 
+      <Typography
+        component="h1"
+        sx={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          maxWidth: { xs: '34%', sm: '42%' },
+          overflow: 'hidden',
+          textAlign: 'center',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          fontSize: { xs: 22, sm: 34 },
+          fontWeight: 900,
+          lineHeight: 1,
+          pointerEvents: 'none',
+        }}
+      >
+        {props.pagename}
+      </Typography>
+
       <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
           flexShrink: 0,
           gap: { xs: 1, sm: 2 },
+          zIndex: 1,
         }}
       >
         <Tooltip title="Reset simulation to Day 1 and restore cash">
@@ -202,6 +273,7 @@ function TopToolBar(props) {
           </span>
         </Tooltip>
       </Box>
+      </Box>
     </Box>
   )
 }
@@ -209,11 +281,13 @@ function TopToolBar(props) {
 function simulateStockPrice(stock) {
   const currentPrice = Number(stock.currentPrice)
   const shouldStayUnchanged = Math.random() < UNCHANGED_PRICE_CHANCE
-  const winChance = WIN_LOSS_FREQUENCY_RATIO / (WIN_LOSS_FREQUENCY_RATIO + 1)
-  const direction = Math.random() < winChance ? 1 : -1
-  const changePercent = shouldStayUnchanged
-    ? 0
-    : direction * Math.random() * 5
+  const shouldCrash = !shouldStayUnchanged && Math.random() < MARKET_CRASH_CHANCE
+  const direction = Math.random() < WIN_PRICE_CHANGE_CHANCE ? 1 : -1
+  const changePercent = getRandomPriceChangePercent({
+    direction,
+    shouldCrash,
+    shouldStayUnchanged,
+  })
   const nextPrice = currentPrice * (1 + changePercent / 100)
   const roundedNextPrice = roundToCents(nextPrice)
   const priceChange = roundToCents(roundedNextPrice - currentPrice)
@@ -227,6 +301,19 @@ function simulateStockPrice(stock) {
     priceChange,
     priceChangePercent,
   }
+}
+
+function getRandomPriceChangePercent({ direction, shouldCrash, shouldStayUnchanged }) {
+  if (shouldStayUnchanged) return 0
+
+  if (shouldCrash) {
+    const crashSize = MAX_NORMAL_PRICE_CHANGE_PERCENT
+      + Math.random() * (MAX_CRASH_PRICE_CHANGE_PERCENT - MAX_NORMAL_PRICE_CHANGE_PERCENT)
+
+    return -crashSize
+  }
+
+  return direction * Math.random() * MAX_NORMAL_PRICE_CHANGE_PERCENT
 }
 
 function roundToCents(value) {
