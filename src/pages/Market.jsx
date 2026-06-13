@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
+import CircularProgress from '@mui/material/CircularProgress'
 import AddIcon from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search'
 
@@ -38,18 +39,30 @@ function Market() {
   const [companies, setCompanies] = useState([]);
   const [stocks, setStocks] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const navigate = useNavigate()
 
   // get the data about companies and stocks from the server
   useEffect(() => {
     async function loadMarketData() {
-      const [companiesResponse, stocksResponse] = await Promise.all([
-        axios.get(`${API_BASE_URL}/companies`),
-        axios.get(`${API_BASE_URL}/stocks`),
-      ]);
+      setIsLoading(true);
+      setLoadError(false);
 
-      setCompanies(companiesResponse.data);
-      setStocks(stocksResponse.data);
+      try {
+        const [companiesResponse, stocksResponse] = await Promise.all([
+          axios.get(`${API_BASE_URL}/companies`),
+          axios.get(`${API_BASE_URL}/stocks`),
+        ]);
+
+        setCompanies(companiesResponse.data);
+        setStocks(stocksResponse.data);
+      } catch (error) {
+        console.error(error);
+        setLoadError(true);
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     loadMarketData();
@@ -73,9 +86,6 @@ function Market() {
     );
   }
   
-  // Prevents the page from rendering until both companies and stocks have data.
-  if (!companies.length || !stocks.length) return null;
-
   // console.log("companies = ", companies);
   // console.log("stocks = ", stocks);
 
@@ -100,7 +110,35 @@ function Market() {
       <TopToolBar pagename="Market"/>
 
       <PanelArea>
-        <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+        {isLoading ? (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              pt: 8,
+            }}
+          >
+            <Typography sx={{ mb: 2, color: "text.secondary", fontWeight: 700 }}>
+              Loading from server ...
+            </Typography>
+            <CircularProgress />
+          </Box>
+        ) : loadError ? (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              pt: 8,
+            }}
+          >
+            <Typography sx={{ color: "error.main", fontWeight: 700 }}>
+              Server offline, refresh later or try again
+            </Typography>
+          </Box>
+        ) : (
+          <Box sx={{ maxWidth: 900, mx: 'auto' }}>
           <Box
             sx={{
               mb: 2,
@@ -152,7 +190,8 @@ function Market() {
             collection2={stocks}
             onDelete={handleDeleteStock}
           />
-        </Box>
+          </Box>
+        )}
       </PanelArea>
 
       <BottomToolBar />

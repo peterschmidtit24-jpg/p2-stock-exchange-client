@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import axios from "axios";
@@ -10,6 +11,7 @@ import { API_BASE_URL } from "../config/api";
 // it creates a new data set of a company and its stock data
 function CreateData() {
   const navigate = useNavigate();
+  const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     stockId: "",
@@ -43,44 +45,50 @@ function CreateData() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    setIsSaving(true);
 
-    const companyId = formData.companyId.trim().toUpperCase() || `COMP${Date.now()}`;
-    const stockId = formData.stockId.trim().toUpperCase() || `STK${Date.now()}`;
+    try {
+      const companyId = formData.companyId.trim().toUpperCase() || `COMP${Date.now()}`;
+      const stockId = formData.stockId.trim().toUpperCase() || `STK${Date.now()}`;
 
-    const newStockData = {
-      id: stockId,
-      companyId,
-      currentPrice: Number(formData.currentPrice) || 0,
-      priceChange: Number(formData.priceChange) || 0,
-      priceChangePercent: Number(formData.priceChangePercent) || 0,
-      volume: Number(formData.volume) || 0,
-      marketCap: Number(formData.marketCap) || 0,
+      const newStockData = {
+        id: stockId,
+        companyId,
+        currentPrice: Number(formData.currentPrice) || 0,
+        priceChange: Number(formData.priceChange) || 0,
+        priceChangePercent: Number(formData.priceChangePercent) || 0,
+        volume: Number(formData.volume) || 0,
+        marketCap: Number(formData.marketCap) || 0,
 
-      company: {
-        id: companyId,
-        name: formData.companyName.trim() || "New Company",
-        image: formData.image.trim() || "/assets/google-color-icon.svg",
-        branch: formData.branch.trim() || "Unknown",
-        location: formData.location.trim() || "Unknown",
-        lastRevenue: Number(formData.lastRevenue) || 0,
-        lastRevenueDate: formData.lastRevenueDate || "2024-01-01",
-        lastEarnings: Number(formData.lastEarnings) || 0,
-        lastEarningsDate: formData.lastEarningsDate || "2024-01-01",
-        analystRatings: {
-          buy: Number(formData.buyRatings) || 0,
-          hold: Number(formData.holdRatings) || 0,
-          sell: Number(formData.sellRatings) || 0,
+        company: {
+          id: companyId,
+          name: formData.companyName.trim() || "New Company",
+          image: formData.image.trim() || "/assets/google-color-icon.svg",
+          branch: formData.branch.trim() || "Unknown",
+          location: formData.location.trim() || "Unknown",
+          lastRevenue: Number(formData.lastRevenue) || 0,
+          lastRevenueDate: formData.lastRevenueDate || "2024-01-01",
+          lastEarnings: Number(formData.lastEarnings) || 0,
+          lastEarningsDate: formData.lastEarningsDate || "2024-01-01",
+          analystRatings: {
+            buy: Number(formData.buyRatings) || 0,
+            hold: Number(formData.holdRatings) || 0,
+            sell: Number(formData.sellRatings) || 0,
+          },
         },
-      },
-    };
+      };
 
-    const { company, ...stock } = newStockData;
+      const { company, ...stock } = newStockData;
 
-    // update the DB on the server
-    await axios.post(`${API_BASE_URL}/companies`, company);
-    await axios.post(`${API_BASE_URL}/stocks`, stock);
+      // update the DB on the server
+      await axios.post(`${API_BASE_URL}/companies`, company);
+      await axios.post(`${API_BASE_URL}/stocks`, stock);
 
-    navigate("/");
+      navigate("/");
+    } catch (error) {
+      console.error(error);
+      setIsSaving(false);
+    }
   }
 
   // the form with material UI for entring the new stock data
@@ -265,12 +273,14 @@ function CreateData() {
         <Button
           type="submit"
           variant="contained"
+          disabled={isSaving}
+          startIcon={isSaving ? <CircularProgress color="inherit" size={20} /> : null}
           sx={{
             mt: 2,
             alignSelf: "flex-start",
           }}
         >
-          Save data
+          {isSaving ? "Saving..." : "Save data"}
         </Button>
       </Box>
     </Box>

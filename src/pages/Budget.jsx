@@ -33,13 +33,20 @@ function Budget() {
   const { availableCash, budgetHistory, startingCash, transactions } = usePortfolio()
   const [stocks, setStocks] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [visibleSeries, setVisibleSeries] = useState(loadSavedVisibleSeries)
 
   useEffect(() => {
     async function loadStocks() {
+      setIsLoading(true)
+      setLoadError(false)
+
       try {
         const response = await axios.get(`${API_BASE_URL}/stocks`)
         setStocks(response.data)
+      } catch (error) {
+        console.error(error)
+        setLoadError(true)
       } finally {
         setIsLoading(false)
       }
@@ -120,8 +127,33 @@ function Budget() {
             </Box>
 
             {isLoading ? (
-              <Box sx={{ height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box
+                sx={{
+                  height: 320,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Typography sx={{ mb: 2, color: 'text.secondary', fontWeight: 700 }}>
+                  Loading from server ...
+                </Typography>
                 <CircularProgress />
+              </Box>
+            ) : loadError ? (
+              <Box
+                sx={{
+                  height: 320,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Typography sx={{ color: 'error.main', fontWeight: 700 }}>
+                  Server offline, refresh later or try again
+                </Typography>
               </Box>
             ) : (
               <BudgetLineChart points={chartPoints} visibleSeries={visibleSeries} />

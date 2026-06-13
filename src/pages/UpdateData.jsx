@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import axios from "axios";
@@ -11,6 +12,7 @@ function UpdateData() {
   const location = useLocation();
   const navigate = useNavigate();
   const { company, stock } = location.state || {};
+  const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     stockId: stock?.id || "",
@@ -54,45 +56,51 @@ function UpdateData() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    setIsSaving(true);
 
-    const updatedCompany = {
-      id: formData.companyId,
-      name: formData.companyName,
-      image: formData.image,
-      branch: formData.branch,
-      location: formData.location,
-      lastRevenue: Number(formData.lastRevenue) || 0,
-      lastRevenueDate: formData.lastRevenueDate,
-      lastEarnings: Number(formData.lastEarnings) || 0,
-      lastEarningsDate: formData.lastEarningsDate,
-      analystRatings: {
-        buy: Number(formData.buyRatings) || 0,
-        hold: Number(formData.holdRatings) || 0,
-        sell: Number(formData.sellRatings) || 0,
-      },
-    };
+    try {
+      const updatedCompany = {
+        id: formData.companyId,
+        name: formData.companyName,
+        image: formData.image,
+        branch: formData.branch,
+        location: formData.location,
+        lastRevenue: Number(formData.lastRevenue) || 0,
+        lastRevenueDate: formData.lastRevenueDate,
+        lastEarnings: Number(formData.lastEarnings) || 0,
+        lastEarningsDate: formData.lastEarningsDate,
+        analystRatings: {
+          buy: Number(formData.buyRatings) || 0,
+          hold: Number(formData.holdRatings) || 0,
+          sell: Number(formData.sellRatings) || 0,
+        },
+      };
 
-    const updatedStock = {
-      id: formData.stockId,
-      companyId: updatedCompany.id,
-      currentPrice: Number(formData.currentPrice) || 0,
-      priceChange: Number(formData.priceChange) || 0,
-      priceChangePercent: Number(formData.priceChangePercent) || 0,
-      volume: Number(formData.volume) || 0,
-      marketCap: Number(formData.marketCap) || 0,
-    };
+      const updatedStock = {
+        id: formData.stockId,
+        companyId: updatedCompany.id,
+        currentPrice: Number(formData.currentPrice) || 0,
+        priceChange: Number(formData.priceChange) || 0,
+        priceChangePercent: Number(formData.priceChangePercent) || 0,
+        volume: Number(formData.volume) || 0,
+        marketCap: Number(formData.marketCap) || 0,
+      };
 
-    /*
-    console.log("Submit update clicked", {
-      company: updatedCompany,
-      stock: updatedStock,
-    });
-    */
+      /*
+      console.log("Submit update clicked", {
+        company: updatedCompany,
+        stock: updatedStock,
+      });
+      */
 
-    await axios.put(`${API_BASE_URL}/companies/${company.id}`, updatedCompany);
-    await axios.put(`${API_BASE_URL}/stocks/${stock.id}`, updatedStock);
+      await axios.put(`${API_BASE_URL}/companies/${company.id}`, updatedCompany);
+      await axios.put(`${API_BASE_URL}/stocks/${stock.id}`, updatedStock);
 
-    navigate("/");
+      navigate("/");
+    } catch (error) {
+      console.error(error);
+      setIsSaving(false);
+    }
   }
 
   if (!company || !stock) {
@@ -176,10 +184,15 @@ function UpdateData() {
         <TextField label="Sell ratings" name="sellRatings" type="number" value={formData.sellRatings} onChange={handleChange} />
 
         <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-          <Button type="submit" variant="contained">
-            Submit changes
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={isSaving}
+            startIcon={isSaving ? <CircularProgress color="inherit" size={20} /> : null}
+          >
+            {isSaving ? "Saving..." : "Submit changes"}
           </Button>
-          <Button type="button" variant="outlined" onClick={handleCancel}>
+          <Button type="button" variant="outlined" disabled={isSaving} onClick={handleCancel}>
             Cancel
           </Button>
         </Box>

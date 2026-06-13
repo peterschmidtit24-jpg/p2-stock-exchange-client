@@ -48,13 +48,26 @@ function BuyAndSell() {
   const [quantity, setQuantity] = useState(1);
   const [tradeType, setTradeType] = useState('buy');
   const [cashWarningOpen, setCashWarningOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     async function getStockDetails() {
-      // get the stocks detial for the stock to be bouth or sold.
-      const response = await axios.get(`${API_BASE_URL}/stocks/${stockId}?_expand=company`);
-      const data = response.data;
-      setStocksData(data);
+      setIsLoading(true);
+      setLoadError(false);
+      setStocksData(null);
+
+      try {
+        // get the stocks detial for the stock to be bouth or sold.
+        const response = await axios.get(`${API_BASE_URL}/stocks/${stockId}?_expand=company`);
+        const data = response.data;
+        setStocksData(data);
+      } catch (error) {
+        console.error(error);
+        setLoadError(true);
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     getStockDetails();
@@ -113,13 +126,29 @@ function BuyAndSell() {
     addTransaction(transaction);
   };
 
-  if (!stocksData) {
+  if (isLoading || loadError || !stocksData) {
     return (
       <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <TopToolBar />
         <PanelArea>
-          <Box sx={{ display: 'flex', justifyContent: 'center', pt: 8 }}>
-            <CircularProgress />
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              pt: 8,
+            }}
+          >
+            <Typography
+              sx={{
+                mb: isLoading ? 2 : 0,
+                color: loadError ? 'error.main' : 'text.secondary',
+                fontWeight: 700,
+              }}
+            >
+              {loadError ? 'Server offline, refresh later or try again' : 'Loading from server ...'}
+            </Typography>
+            {isLoading && <CircularProgress />}
           </Box>
         </PanelArea>
         <BottomToolBar />
